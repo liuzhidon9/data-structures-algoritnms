@@ -1,4 +1,4 @@
-## 树 Tree
+# **树 Tree**
 
 一个树结构包含一系列存在父子关系的节点，每个节点都有一个父节点（除了顶部第一个节点没有父节点）以及零个或多个子节点。
 
@@ -9,11 +9,9 @@
 3. `外部节点`：没有子节点的节点。
 4. `子树`：子树有节点和它的后代构成。
 
-### 二叉树和二叉搜索树
+## **二叉树**
 
 `二叉树中的节点最多只能有两个子节点：一个是左侧节点，另一个是右侧节点。`
-
-**二叉搜索树（BST）** `是二叉树的一种,但是只允许你在左侧节点存储比父节点小的值，右侧节点存储比父节点大的值。`
 
 **二叉树需要实现的方法：**
 
@@ -27,11 +25,23 @@
 8. search(key)：在树中搜索特定值，有则返回 true，否则返回 false。
 9. remove(key)：从树中移除某个键。
 
+### **二叉搜索树（BST）**
+
+二叉搜索树（BST） `是二叉树的一种,但是只允许你在左侧节点存储比父节点小的值，右侧节点存储比父节点大的值。`
+
 **BST 遍历：**
 
 - `中序遍历`：以一种上行顺序访问 BST 的所有节点，也就是从最小到最大的顺序访问所有节点(排序操作)。
+
+  ![中序遍历](./img/inOrderTraverse.png)
+
 - `先序遍历`：以优先于后代节点的顺序访问每个节点，先序遍历的一种应用是打印一个结构化的文档。
+
+  ![中序遍历](./img/preOrderTraverse.png)
+
 - `后序遍历`：先访问节点的后代节点，再访问节点本身。后序遍历的一种应用是计算一个目录及其子目录中所有文件占空间的大小。
+
+  ![中序遍历](./img/postOrderTraverse.png)
 
 **搜索树中的值：**
 
@@ -39,7 +49,7 @@
 - 搜索最大值
 - 搜索特定值
 
-### 二叉搜索树 BST 代码实现
+#### **二叉搜索树 BST 代码实现**
 
 ```js
 import { Compare, defaultCompare } from "./utils.js";
@@ -214,4 +224,235 @@ tree.postOrderTraverse((key) => {
 console.log("最小值：", tree.min());
 console.log("最大值：", tree.max());
 console.log("search: 3", tree.search(3));
+```
+
+### **自平衡二叉树（AVL 树）**
+
+AVL 树是一种自平衡树，添加或移除节点时，AVL 树会尝试保持自平衡。任意一个节点（不论深度）的左子树和右子树高度最多相差 1。添加或移除节点时，AVL 树会尽可能尝试转换为完全树。
+
+#### **术语：**
+
+**1. 节点高度和平衡因子**
+
+节点的高度是从节点到其任意子节点的边的最大值。在 AVL 树种，需要对每个节点计算左子树高度（hr）和右子树高度（hl）之间的差值，该值（hl-hr）应为 0、1 或-1，如果不是这个三个值之一，则需要平衡该 AVL 树。
+
+**2. 平衡操作---AVL 旋转**
+
+- 左-左（LL）：向右的单旋转 (节点的左侧子节点高度大于右侧子节点的高度)
+- 右-右（RR）：向左的单旋转
+- 左-右（LR）：向右的双旋转（先 LL 旋转，再 RR 旋转）
+- 右-左（RL）：向左的双旋转（先 RR 旋转，再 LL 旋转）
+
+##### **LL 向右的单旋转**
+
+`节点的左侧子节点高度大于右侧子节点的高度，并且左侧子节点也是平衡或左侧比较重。`
+
+![向右的单旋转](./img/rotationLL.png)
+
+```js
+ //向右的单旋转
+ rotationLL(node) {
+        let tmp = node.left
+        node.left = tmp.right
+        tmp.right = node
+        return tmp
+    }
+```
+
+##### **RR 向左的单旋转**
+
+`节点的右侧子节点高度大于左侧子节点高度，并且右侧子节点也是平衡或右侧比较重。`
+
+![向右的单旋转](./img/rotationRR.png)
+
+```js
+ //向左的单旋转
+    rotationRR(node) {
+        let tmp = node.right
+        node.right = tmp.left
+        tmp.left = node
+        return tmp
+    }
+```
+
+##### **LR 向右的双旋转**
+
+节点的左侧子节点高度大于右侧子节点高度，且左侧子节点右侧较重。
+
+![向右的双旋转](./img/rotationLR.png)
+
+```js
+    //向右的双旋转,节点的左侧子节点高度大于右侧子节点高度，且左侧子节点的右侧较重。
+    rotationLR(node){
+        node.left = this.rotationRR(node.left)
+        return this.rotationLL(node)
+    }
+```
+
+##### **RL 向左的双旋转**
+
+节点的右侧子节点高度大于左侧子节点高度，且右侧子节点左侧较重。
+
+![向左的双旋转](./img/rotationRL.png)
+
+```js
+    rotationRL(node){
+        node.right = this.rotationLL(node.right)
+        return this.rotationRR(node)
+    }
+```
+
+#### 自平衡 BST 实现
+
+```js
+import { Compare, defaultCompare } from "./utils.js";
+import { Node } from "./model.js";
+import BinarySearchTree from "./binary-search-tree.js";
+
+const BalanceFactor = {
+  UNBALANCE_RIGHT: 1,
+  SLIGHTLY_UNBALANCE_RIGHT: 2,
+  BALANCE: 3,
+  UNBALANCE_LEFT: 4,
+  SLIGHTLY_UNBALANCE_LEFT: 5,
+};
+
+class AVLTree extends BinarySearchTree {
+  constructor(compareFn = defaultCompare) {
+    super(compareFn);
+    this.compareFn = compareFn;
+    this.root = null;
+  }
+  //获取节点的高度
+  getNodeHeight(node) {
+    if (node === null) return -1;
+    return Math.max(this.getNodeHeight(node.left), this.getNodeHeight(node.right)) + 1;
+  }
+
+  // 获取节点平衡因子
+  getBalanceFactor(node) {
+    let heightDifference = this.getNodeHeight(node.left) - this.getNodeHeight(node.right);
+    switch (heightDifference) {
+      case -2:
+        return BalanceFactor.UNBALANCE_RIGHT;
+      case -1:
+        return BalanceFactor.SLIGHTLY_UNBALANCE_RIGHT;
+      case 1:
+        return BalanceFactor.SLIGHTLY_UNBALANCE_LEFT;
+      case 2:
+        return BalanceFactor.UNBALANCE_LEFT;
+      default:
+        return BalanceFactor.BALANCE;
+    }
+  }
+
+  //左侧比较重，向右的单旋转
+  rotationLL(node) {
+    let tmp = node.left;
+    node.left = tmp.right;
+    tmp.right = node;
+    return tmp;
+  }
+
+  //右侧比较重，向左的单旋转
+  rotationRR(node) {
+    let tmp = node.right;
+    node.right = tmp.left;
+    tmp.left = node;
+    return tmp;
+  }
+
+  //向右的双旋转,节点的左侧子节点高度大于右侧子节点高度，且左侧子节点的右侧较重。
+  rotationLR(node) {
+    node.left = this.rotationRR(node.left);
+    return this.rotationLL(node);
+  }
+
+  // 向左的双旋转,节点的右侧子节点高度大于左侧子节点高度，且右侧子节点的左侧较重。
+  rotationRL(node) {
+    node.right = this.rotationLL(node.right);
+    return this.rotationRR(node);
+  }
+
+  //插入节点
+  insert(key) {
+    this.root = this.insertNode(this.root, key);
+  }
+  insertNode(node, key) {
+    if (node === null) {
+      return new Node(key);
+    }
+    if (this.compareFn(key, node.key) === Compare.LESS_THAN) {
+      node.left = this.insertNode(node.left, key);
+    } else if (this.compareFn(key, node.key) === Compare.BIGGER_THAN) {
+      node.right = this.insertNode(node.right, key);
+    } else {
+      //重复的键
+      return node;
+    }
+
+    // 检查节点是否需要进行平衡操作
+    let balanceFactor = this.getBalanceFactor(node); //获取节点平衡因子
+    if (balanceFactor === BalanceFactor.UNBALANCE_LEFT) {
+      if (this.compareFn(key, node.left.key) === Compare.LESS_THAN) {
+        node = this.rotationLL(node);
+      } else {
+        node = this.rotationLR(node);
+      }
+    }
+    if (balanceFactor === BalanceFactor.UNBALANCE_RIGHT) {
+      if (this.compareFn(key, node.right.key) === Compare.BIGGER_THAN) {
+        node = this.rotationRR(node);
+      } else {
+        node = this.rotationRL(node);
+      }
+    }
+    return node;
+  }
+
+  //移除一个节点
+  remove(key) {
+    this.root = this.removeNode(this.root, key);
+  }
+  removeNode(node, key) {
+    node = super.removeNode(node, key);
+    if (node === null) return null;
+
+    //    移除某个键后检查是否需要平衡操作
+    let balanceFactor = this.getBalanceFactor(node);
+    console.log(balanceFactor, node);
+    if (balanceFactor === BalanceFactor.UNBALANCE_LEFT) {
+      let factorLeft = this.getBalanceFactor(node.left);
+      if (factorLeft === BalanceFactor.BALANCE || BalanceFactor.SLIGHTLY_UNBALANCE_LEFT) {
+        return this.rotationLL(node);
+      }
+      if (factorLeft === BalanceFactor.SLIGHTLY_UNBALANCE_RIGHT) {
+        return this.rotationLR(node);
+      }
+    }
+    if (balanceFactor === BalanceFactor.UNBALANCE_RIGHT) {
+      let factorRight = this.getBalanceFactor(node.right);
+      if (factorRight === BalanceFactor.BALANCE || factorRight === BalanceFactor.SLIGHTLY_UNBALANCE_RIGHT) {
+        return this.rotationRR(node);
+      }
+      if (factorRight === BalanceFactor.SLIGHTLY_UNBALANCE_LEFT) {
+        return this.rotationRL(node);
+      }
+    }
+    return node;
+  }
+}
+
+let avlTree = new AVLTree();
+avlTree.insert(50);
+avlTree.insert(70);
+avlTree.insert(80);
+avlTree.insert(90);
+avlTree.insert(72);
+avlTree.insert(75);
+avlTree.insert(73);
+avlTree.insert(74);
+console.log(avlTree.root);
+avlTree.remove(50);
+console.log(avlTree.root);
 ```

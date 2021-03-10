@@ -1,11 +1,5 @@
 import { Compare, defaultCompare } from './utils.js'
-class Node {
-    constructor(key) {
-        this.key = key //节点值
-        this.left = null //左侧子节点引用
-        this.right = null //右侧子节点引用
-    }
-}
+import {Node} from './model.js'
 
 class BinarySearchTree {
     constructor(compareFn = defaultCompare) {
@@ -135,36 +129,37 @@ class BinarySearchTree {
         return node
     }
 }
+export default BinarySearchTree = BinarySearchTree
 
-let tree = new BinarySearchTree()
-tree.insert(11);
-tree.insert(7);
-tree.insert(15);
-tree.insert(5);
-tree.insert(3);
-tree.insert(9);
-tree.insert(8);
-tree.insert(10);
-tree.insert(13);
-tree.insert(12);
-tree.insert(14);
-tree.insert(20);
-tree.insert(18);
-tree.insert(25);
-tree.remove(7)
-console.log(tree.root);
-console.log('=====中序遍历=======');
-tree.inOrderTraverse((key) => {
-    console.log(key);
-})
-console.log('=====先序遍历=======');
-tree.preOrderTraverse((key) => {
-    console.log(key);
-})
-console.log('=====后序遍历=======');
-tree.postOrderTraverse((key) => {
-    console.log(key);
-})
-console.log("最小值：", tree.min());
-console.log("最大值：", tree.max());
-console.log("search: 3", tree.search(3));
+// let tree = new BinarySearchTree()
+// tree.insert(11);
+// tree.insert(7);
+// tree.insert(15);
+// tree.insert(5);
+// tree.insert(3);
+// tree.insert(9);
+// tree.insert(8);
+// tree.insert(10);
+// tree.insert(13);
+// tree.insert(12);
+// tree.insert(14);
+// tree.insert(20);
+// tree.insert(18);
+// tree.insert(25);
+// tree.remove(7)
+// console.log(tree.root);
+// console.log('=====中序遍历=======');
+// tree.inOrderTraverse((key) => {
+//     console.log(key);
+// })
+// console.log('=====先序遍历=======');
+// tree.preOrderTraverse((key) => {
+//     console.log(key);
+// })
+// console.log('=====后序遍历=======');
+// tree.postOrderTraverse((key) => {
+//     console.log(key);
+// })
+// console.log("最小值：", tree.min());
+// console.log("最大值：", tree.max());
+// console.log("search: 3", tree.search(3));
