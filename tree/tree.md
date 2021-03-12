@@ -37,11 +37,11 @@
 
 - `先序遍历`：以优先于后代节点的顺序访问每个节点，先序遍历的一种应用是打印一个结构化的文档。
 
-  ![中序遍历](./img/preOrderTraverse.png)
+  ![先序遍历](./img/preOrderTraverse.png)
 
 - `后序遍历`：先访问节点的后代节点，再访问节点本身。后序遍历的一种应用是计算一个目录及其子目录中所有文件占空间的大小。
 
-  ![中序遍历](./img/postOrderTraverse.png)
+  ![后序遍历](./img/postOrderTraverse.png)
 
 **搜索树中的值：**
 
@@ -226,9 +226,9 @@ console.log("最大值：", tree.max());
 console.log("search: 3", tree.search(3));
 ```
 
-### **自平衡二叉树（AVL 树）**
+### **自平衡二叉搜索树（AVL 树）**
 
-AVL 树是一种自平衡树，添加或移除节点时，AVL 树会尝试保持自平衡。任意一个节点（不论深度）的左子树和右子树高度最多相差 1。添加或移除节点时，AVL 树会尽可能尝试转换为完全树。
+AVL 树是一种自平衡二叉搜索树，添加或移除节点时，AVL 树会尝试保持自平衡。任意一个节点（不论深度）的左子树和右子树高度最多相差 1。添加或移除节点时，AVL 树会尽可能尝试转换为完全树。
 
 #### **术语：**
 
@@ -455,4 +455,173 @@ avlTree.insert(74);
 console.log(avlTree.root);
 avlTree.remove(50);
 console.log(avlTree.root);
+```
+
+### **红黑树**
+
+红黑树也是一个自平衡二叉搜索树。
+
+**理解红黑树的性质：**
+
+1. 节点是红色或黑色。
+2. 树的根节点是黑的。
+3. 所有叶子都是黑的（叶子是 NIL 节点）。
+4. 每个红色节点必须有两个黑色的子节点
+5. 从给定节点到它的每个叶子节点的所有路径包含相同数量的黑色节点。
+
+**图例：**
+
+![红黑树](./img/red-black-tree.png)
+
+##### **红黑树代码实现**
+
+```js
+import { Compare, defaultCompare } from "./utils.js";
+import { RedBlackNode, Colors } from "./model.js";
+import BinarySearchTree from "./binary-search-tree.js";
+
+class RedBlackTree extends BinarySearchTree {
+  constructor(compareFn = defaultCompare) {
+    super(compareFn);
+    this.compareFn = compareFn;
+    this.root = null;
+  }
+  insert(key) {
+    if (this.root === null) {
+      this.root = new RedBlackNode(key);
+      this.root.color = Colors.BLACK;
+      return;
+    }
+    let newNode = this.insertNode(this.root, key);
+    this.fixTreeProperties(newNode);
+  }
+  insertNode(node, key) {
+    //第一种情况，左侧插入
+    if (this.compareFn(key, node.key) === Compare.LESS_THAN) {
+      if (node.left === null) {
+        node.left = new RedBlackNode(key);
+        node.left.parent = node;
+        return node.left;
+      }
+      return this.insertNode(node.left, key);
+    }
+    //第二种情况，右侧插入
+    if (this.compareFn(key, node.key) === Compare.BIGGER_THAN) {
+      if (node.right === null) {
+        node.right = new RedBlackNode(key);
+        node.right.parent = node;
+        return node.right;
+      }
+      return this.insertNode(node.right, key);
+    }
+    //第三种情况，相同的键，不用操作
+    return null;
+  }
+
+  rotationRR(node) {
+    if (node === null) return;
+    let tmp = node.right;
+    node.right = tmp.left;
+    tmp.parent = node.parent;
+    if (tmp.left && tmp.left.key) {
+      tmp.left.parent = node;
+    }
+    if (!node.parent) {
+      this.root = tmp;
+    } else {
+      if (node === node.parent.left) {
+        node.parent.left = tmp;
+      } else {
+        node.parent.right = tmp;
+      }
+    }
+
+    tmp.left = node;
+    node.parent = tmp;
+  }
+  rotationLL(node) {
+    let tmp = node.left;
+    node.left = tmp.right;
+    if (tmp.right && tmp.right.key) {
+      tmp.right.parent = node;
+    }
+    tmp.parent = node.parent;
+    if (!node.parent) {
+      this.root = tmp;
+    } else {
+      if (node === node.parent.right) {
+        node.parent.right = tmp;
+      } else {
+        node.parent.left = tmp;
+      }
+    }
+    tmp.right = node;
+    node.parent = tmp;
+  }
+
+  fixTreeProperties(node) {
+    while (node && node.parent && node.isRed() && node.parent.isRed()) {
+      let parent = node.parent;
+      let grandParent = parent.parent;
+
+      //第一种情况：父节点是左侧子节点
+      if (grandParent && grandParent.left === parent) {
+        let uncle = grandParent.right;
+        //情况A:叔节点存在并且颜色是红色的。
+        if (uncle && uncle.isRed() && grandParent.parent) {
+          grandParent.color = Colors.RED;
+          parent.color = Colors.BLACK;
+          uncle.color = Colors.BLACK;
+          node = grandParent;
+          continue;
+        }
+        //父节点的右侧节点较重
+        if (node === parent.right) {
+          this.rotationRR(parent); //向左的单旋转
+          node = parent;
+          parent = node.parent;
+        }
+        this.rotationLL(grandParent);
+        parent.color = Colors.BLACK;
+        grandParent.color = Colors.RED;
+        node = parent;
+        continue;
+      }
+
+      //第二种情况：父节点是右子节点
+      if (grandParent && grandParent.right === parent) {
+        let uncle = grandParent.left;
+        if (uncle && uncle.isRed() && grandParent.parent) {
+          grandParent.color = Colors.RED;
+          parent.color = Colors.BLACK;
+          uncle.color = Colors.BLACK;
+          node = grandParent;
+          continue;
+        }
+        //父节点左侧较重
+        if (parent.left === node) {
+          this.rotationLL(parent);
+          node = parent;
+          parent = node.parent;
+        }
+        this.rotationRR(grandParent);
+        parent.color = Colors.BLACK;
+        grandParent.color = Colors.RED;
+        node = parent;
+      }
+    }
+    this.root.color = Colors.BLACK;
+  }
+}
+
+let redBlackTree = new RedBlackTree();
+redBlackTree.insert(1);
+redBlackTree.insert(2);
+redBlackTree.insert(3);
+redBlackTree.insert(4);
+redBlackTree.insert(5);
+redBlackTree.insert(6);
+redBlackTree.insert(7);
+redBlackTree.insert(8);
+console.log(redBlackTree.root);
 ```

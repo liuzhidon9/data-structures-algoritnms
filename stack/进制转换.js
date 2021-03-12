@@ -23,4 +23,4 @@ function baseConverter(decNumber, base) {
 
 }
 
-console.log(baseConverter(35, 2));
+console.log(baseConverter(5, 2));
